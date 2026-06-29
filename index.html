@@ -38,12 +38,14 @@ body{background:var(--wall);font-family:'Inter',system-ui,sans-serif;color:var(-
 .strip{margin-top:14px;display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
 .strip.r2{margin-top:7px}
 .day{aspect-ratio:1;border-radius:50%;background:var(--panel2);display:flex;flex-direction:column;align-items:center;justify-content:center;
-  font-family:'Space Grotesk',sans-serif;font-size:12.5px;font-weight:500;color:#cbbfa6;position:relative}
+  font-family:'Space Grotesk',sans-serif;font-size:12.5px;font-weight:500;color:#cbbfa6;position:relative;cursor:pointer}
 .day small{font-size:8px;color:var(--dim);font-family:'Inter';font-weight:600;margin-bottom:1px}
 .day.today{background:var(--gold);color:var(--ink);font-weight:700;box-shadow:0 0 16px rgba(212,175,98,.4)}
 .day.today small{color:rgba(21,17,10,.6)}
 .day.has::after{content:"";position:absolute;bottom:4px;width:4px;height:4px;border-radius:50%;background:var(--gold)}
 .day.today.has::after{background:var(--ink)}
+.day.sel{box-shadow:0 0 0 2px var(--gold)}
+.row.flash{border-color:var(--gold)!important;background:rgba(212,175,98,.18)!important}
 
 .mdiv{font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:600;color:var(--dim);text-transform:uppercase;
   letter-spacing:.08em;margin:22px 4px 10px}
@@ -230,10 +232,11 @@ function render(){
   for(let i=0;i<14;i++){
     const d=new Date(today);d.setDate(today.getDate()+i);const k=ymd(d);
     const cls=['day',i===0?'today':'',has.has(k)?'has':''].filter(Boolean).join(' ');
-    const cell=`<div class="${cls}"><small>${GUNK[d.getDay()]}</small>${d.getDate()}</div>`;
+    const cell=`<div class="${cls}" data-d="${k}"><small>${GUNK[d.getDay()]}</small>${d.getDate()}</div>`;
     if(i<7)s1+=cell;else s2+=cell;
   }
   $('strip1').innerHTML=s1;$('strip2').innerHTML=s2;
+  document.querySelectorAll('.day[data-d]').forEach(el=>el.onclick=()=>jumpToDate(el.dataset.d));
 
   // ajanda: tarihli, bugünden itibaren, artan
   const todayStr=ymd(today);
@@ -252,12 +255,21 @@ function render(){
 function row(x,d){
   const appr=x.approval==='onaylandi';
   const sub=[x.time,x.kategori,x.assignee==='yasin'?'Yasin':x.assignee==='efe'?'Efe':''].filter(Boolean).join(' · ');
-  return `<div class="row" data-id="${esc(x.id)}">
+  return `<div class="row" data-id="${esc(x.id)}" data-date="${x.date}">
     <div class="date"><div class="m">${AY[d.getMonth()].slice(0,3)}</div><div class="d">${String(d.getDate()).padStart(2,'0')}</div></div>
     <div class="ico ${catClass(x.kategori)}">${catIcon(x.kategori)}</div>
     <div class="body"><div class="t">${esc(x.title||'(başlıksız)')}</div><div class="s">${esc(sub||'—')}</div></div>
     <div class="chip ${appr?'ok':'lock'}">${appr?'✓':'🔒'}</div>
   </div>`;
+}
+function jumpToDate(date){
+  document.querySelectorAll('.day').forEach(d=>d.classList.remove('sel'));
+  const dayEl=document.querySelector('.day[data-d="'+date+'"]'); if(dayEl)dayEl.classList.add('sel');
+  const rows=[...document.querySelectorAll('.row[data-date]')];
+  const target=rows.find(r=>r.dataset.date===date)||rows.find(r=>r.dataset.date>date);
+  if(!target){toast('Bu tarihten sonra içerik yok');return;}
+  target.scrollIntoView({behavior:'smooth',block:'center'});
+  target.classList.add('flash');setTimeout(()=>target.classList.remove('flash'),1300);
 }
 
 /* ---- sheet kontrol ---- */
