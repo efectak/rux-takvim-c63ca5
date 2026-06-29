@@ -117,7 +117,6 @@ header{position:sticky;top:0;z-index:10;
 
 <div class="chips" id="chips">
   <div class="chip on" data-f="all">Hepsi</div>
-  <div class="chip" data-f="yasin">📸 Yasin</div>
   <div class="chip" data-f="Çekim">Çekim</div>
   <div class="chip" data-f="Reels">Reels</div>
   <div class="chip" data-f="Post">Post</div>
@@ -193,7 +192,6 @@ function jumpToNearest(){
 }
 function passFilter(x){
   if(filter==='all') return true;
-  if(filter==='yasin') return x.assignee==='yasin' || x.kategori==='Çekim';
   return x.kategori===filter;
 }
 
