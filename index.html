@@ -258,6 +258,8 @@ $('chips').addEventListener('click',e=>{
 });
 // uygulamaya geri dönünce tazele
 document.addEventListener('visibilitychange',()=>{ if(!document.hidden) load(); });
+// açıkken her 25 sn'de otomatik tazele (yakın-anlık) — Yasin dokunmadan güncellenir
+setInterval(()=>{ if(!document.hidden && SB_KEY) load(); }, 25000);
 
 // şifre çözülünce çalışır: önce önbellekten anında göster, sonra canlı çek
 function startApp(){
