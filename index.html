@@ -51,15 +51,16 @@ body{background:var(--wall);font-family:'Inter',system-ui,sans-serif;color:var(-
   letter-spacing:.08em;margin:22px 4px 10px}
 .list{display:flex;flex-direction:column;gap:9px}
 .row{display:flex;align-items:center;gap:12px;background:rgba(212,175,98,.045);border:1px solid var(--line);
-  border-radius:16px;padding:11px 13px;cursor:pointer;transition:background .15s,transform .12s;animation:fadeUp .42s cubic-bezier(.22,.7,.3,1) both}
+  border-radius:16px;padding:11px 13px;cursor:pointer;transition:background .15s,transform .12s;animation:fadeUp .58s cubic-bezier(.16,1,.3,1) both}
 .row:active{transform:scale(.985)}
-.fbar{display:flex;align-items:center;gap:10px;margin:18px 2px 12px;padding:10px 14px;background:rgba(212,175,98,.06);border:1px solid var(--line);border-radius:14px;animation:fadeUp .35s ease both}
+.fbar{display:flex;align-items:center;gap:10px;margin:18px 2px 12px;padding:10px 14px;background:rgba(212,175,98,.06);border:1px solid var(--line);border-radius:14px;animation:fadeUp .5s cubic-bezier(.16,1,.3,1) both}
 .fbar .fday{font-family:'Space Grotesk',sans-serif;font-weight:600;color:var(--cream);font-size:15px}
 .fbar .fcnt{font-size:12.5px;color:var(--dim)}
 .fbar .clr{margin-left:auto;background:none;border:none;color:var(--gold);font-weight:700;font-size:13px;cursor:pointer;font-family:'Inter'}
-@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-.ready .hero{animation:fadeUp .5s ease both}
-.ready .top{animation:fadeUp .42s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}
+.ready .hero{animation:fadeUp .62s cubic-bezier(.16,1,.3,1) both}
+.ready .top{animation:fadeUp .55s cubic-bezier(.16,1,.3,1) both}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 .row:active{background:rgba(212,175,98,.1)}
 .date{width:36px;text-align:center;flex:0 0 auto}
 .date .m{font-size:10.5px;font-weight:600;color:var(--dim);text-transform:uppercase}
@@ -83,11 +84,11 @@ body{background:var(--wall);font-family:'Inter',system-ui,sans-serif;color:var(-
 .fab:active{transform:translateX(-50%) scale(.97)}
 
 /* sheet */
-.scrim{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(3px);z-index:40;display:none}
-.scrim.on{display:block}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(3px);z-index:40;opacity:0;pointer-events:none;transition:opacity .4s ease}
+.scrim.on{opacity:1;pointer-events:auto}
 .sheet{position:fixed;left:0;right:0;bottom:0;z-index:50;background:#100d08;border:1px solid var(--line2);
   border-bottom:none;border-radius:24px 24px 0 0;padding:20px 18px calc(26px + env(safe-area-inset-bottom));
-  max-width:520px;margin:0 auto;transform:translateY(100%);transition:transform .26s cubic-bezier(.3,.8,.3,1)}
+  max-width:520px;margin:0 auto;transform:translateY(100%);transition:transform .46s cubic-bezier(.22,.95,.3,1)}
 .sheet.on{transform:translateY(0)}
 .sheet h3{font-family:'Space Grotesk',sans-serif;font-size:18px;font-weight:600;margin-bottom:16px}
 .fld{margin-bottom:14px}
@@ -287,7 +288,7 @@ function selectDay(date){ selDate=(selDate===date?null:date); render(true); }
 function row(x,d,idx){
   const appr=x.approval==='onaylandi';
   const sub=[x.time,x.kategori,x.assignee==='yasin'?'Yasin':x.assignee==='efe'?'Efe':''].filter(Boolean).join(' · ');
-  return `<div class="row" data-id="${esc(x.id)}" data-date="${x.date}" style="animation-delay:${Math.min(idx||0,14)*34}ms">
+  return `<div class="row" data-id="${esc(x.id)}" data-date="${x.date}" style="animation-delay:${Math.min(idx||0,12)*28}ms">
     <div class="date"><div class="m">${AY[d.getMonth()].slice(0,3)}</div><div class="d">${String(d.getDate()).padStart(2,'0')}</div></div>
     <div class="ico ${catClass(x.kategori)}">${catIcon(x.kategori)}</div>
     <div class="body"><div class="t">${esc(x.title||'(başlıksız)')}</div><div class="s">${esc(sub||'—')}</div></div>
