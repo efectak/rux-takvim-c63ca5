@@ -7,6 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="RUX Takvim">
+<link rel="manifest" href="manifest.json">
 <title>RUX Takvim</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
@@ -167,7 +168,7 @@ body{background:var(--wall);font-family:'Inter',system-ui,sans-serif;color:var(-
 <div class="app">
   <div class="top">
     <div class="brand"><b>RUX</b> Takvim</div>
-    <div class="sync"><span id="syncTxt">…</span><span class="r" id="refresh">↻</span></div>
+    <div class="sync"><span id="syncTxt">…</span><span class="r" id="notifBtn" aria-label="Bildirimler">🔔</span><span class="r" id="refresh">↻</span></div>
   </div>
 
   <div class="hero">
@@ -220,6 +221,7 @@ body{background:var(--wall);font-family:'Inter',system-ui,sans-serif;color:var(-
 <script>
 const SB_URL='https://vigskbrwdosehqgldvay.supabase.co';
 let SB_KEY=null;
+const VAPID_PUBLIC='BJoU1C-PFBQVAb7LofXAFKeQ8E2tIWF0WX9CmVzFl-ayg4Sa9IW0a3sXW37VbUhL-CTcnBFr4zo3CwETwRYAXfo';
 const ENC={salt:'laLGKw8GC7hjiQvTY1DZOw==',iv:'f5yh+3FbeyB7ag+e',cipher:'fVk/K56o5Dedcn3u2YlCokuH+DgvslrphjR6nZbcO6bxueQxDGoCu7ewQa3JYZ6vELgVCVNsd++Fvh24GRo='};
 const b64d=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
 async function unlock(pass){
@@ -343,6 +345,33 @@ function toggleCal(){
   b.addEventListener('transitionend',te,{once:true});
   setTimeout(te,560);
 }
+
+/* ---- bildirimler (web push) ---- */
+function u8(b){const pad='='.repeat((4-b.length%4)%4);const s=(b+pad).replace(/-/g,'+').replace(/_/g,'/');const raw=atob(s);return Uint8Array.from([...raw].map(c=>c.charCodeAt(0)));}
+function hashStr(s){let h=5381;for(let i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))>>>0;return h;}
+function setBell(on){const b=$('notifBtn');if(b)b.style.color=on?'var(--gold-hi)':'';}
+async function notifState(){
+  try{ if(!('serviceWorker'in navigator)||!('PushManager'in window))return null; const reg=await navigator.serviceWorker.getRegistration(); if(!reg)return null; return await reg.pushManager.getSubscription(); }catch(e){return null;}
+}
+async function setupNotif(){
+  if(!('serviceWorker'in navigator)||!('PushManager'in window)){ toast('Bu tarayıcı bildirim desteklemiyor'); return; }
+  const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
+  const standalone=window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone;
+  if(isIOS&&!standalone){ toast('Önce "Ana Ekrana Ekle" → oradan aç → 🔔 bas'); return; }
+  try{
+    const reg=await navigator.serviceWorker.register('sw.js');
+    await navigator.serviceWorker.ready;
+    let sub=await reg.pushManager.getSubscription();
+    if(sub){ toast('Bildirimler zaten açık 🔔'); setBell(true); return; }
+    const perm=await Notification.requestPermission();
+    if(perm!=='granted'){ toast('Bildirim izni verilmedi'); return; }
+    sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:u8(VAPID_PUBLIC)});
+    const endpoint=sub.endpoint, id='d'+hashStr(endpoint).toString(36);
+    const r=await fetch(`${SB_URL}/rest/v1/push_subs?on_conflict=id`,{method:'POST',headers:{...hdr(),'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'},body:JSON.stringify({id,endpoint,sub:sub.toJSON(),person:'hepsi'})});
+    if(!r.ok)throw new Error('kayıt HTTP '+r.status);
+    toast('Bildirimler açıldı 🔔'); setBell(true);
+  }catch(e){ toast('Bildirim hatası: '+e.message); }
+}
 function row(x,d,idx){
   const appr=x.approval==='onaylandi';
   const sub=[x.time,x.kategori,x.assignee==='yasin'?'Yasin':x.assignee==='efe'?'Efe':''].filter(Boolean).join(' · ');
@@ -370,6 +399,7 @@ $('navPrev').onclick=()=>{ if(expanded){viewMonth.setMonth(viewMonth.getMonth()-
 $('navNext').onclick=()=>{ if(expanded){viewMonth.setMonth(viewMonth.getMonth()+1);} else if(viewStart){viewStart.setDate(viewStart.getDate()+7);} renderCal();updateHead(); };
 $('clrSel').onclick=clearSel;
 $('calToggle').onclick=toggleCal;
+$('notifBtn').onclick=setupNotif;
 $('saveBtn').onclick=async()=>{
   const title=$('f_title').value.trim();const date=$('f_date').value;
   if(!title){toast('Başlık gerekli');return;}
@@ -427,6 +457,8 @@ setInterval(()=>{if(!document.hidden&&SB_KEY)load();},25000);
 /* ---- gate ---- */
 function startApp(){
   document.body.classList.add('ready');
+  if('serviceWorker'in navigator){navigator.serviceWorker.register('sw.js').catch(()=>{});}
+  notifState().then(s=>setBell(!!s));
   const c=JSON.parse(localStorage.getItem('rux_cache')||'null');
   if(c&&c.items){ALL=c.items.filter(x=>x&&!x.isTemplate);setSync(c.t,true);render();}
   load();
