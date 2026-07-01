@@ -1,9 +1,17 @@
 {
   "name": "RUX Takvim",
-  "short_name": "RUX Takvim",
+  "short_name": "RUX",
+  "description": "RUX ekip içerik takvimi — çekim, reels, post planlaması.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#0a0806",
-  "theme_color": "#0a0806"
+  "theme_color": "#0a0806",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
 }
